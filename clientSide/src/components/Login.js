@@ -1,17 +1,35 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { loginUser } from '../apicalls/user';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // Handle login logic here
-    console.log('Login attempted with', { email, password });
+    const values = { email, password };
+    console.log(values);
+
+    try {
+      const res = await loginUser(values);
+      if (res.success) {
+        console.log(res.message);
+        localStorage.setItem('token', res.token);
+        navigate('/');
+        window.location.reload(); // Reload the page to update the header
+      } else {
+        console.log('Authentication failed..!');
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-r  to-indigo-600">
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-100">
       <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
         <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">Login to Your Account</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -64,7 +82,7 @@ const Login = () => {
 
           <p className="mt-4 text-center text-sm text-gray-600">
             Don't have an account?{' '}
-            <a href="/signup" className="text-indigo-600 hover:text-indigo-500">Sign up</a>
+            <Link to="/signup" className="text-indigo-600 hover:text-indigo-500">Sign up</Link>
           </p>
         </form>
       </div>

@@ -1,20 +1,40 @@
-import React, { useState } from 'react';
-
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from "react-router-dom";
+import { registerUser } from '../apicalls/user';
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+
+  const handleSubmit = async (e) => {
     // Handle registration logic
+    e.preventDefault();
     if (password !== confirmPassword) {
       alert("Passwords don't match!");
-    } else {
-      console.log('User registered with', { name, email, password });
+    }  
+    const values  = {name , email, password};
+    console.log(values);
+    try {
+      const response = await registerUser(values);
+      if(response.success){
+        console.log('User registered successully..!');
+      } else {
+        alert('User exists already !!');
+      }
+    } catch (error) {
+      console.log(error);
+      
     }
   };
+
+  useEffect(() => {
+    if(localStorage.getItem('token')){
+      navigate('/')
+    }
+  },[]);
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-900 to-indigo-600">
