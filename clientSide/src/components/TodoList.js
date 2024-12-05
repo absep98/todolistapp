@@ -1,30 +1,54 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Plus } from "lucide-react";
 import TodoItem from "./TodoItem";
-
+import { addTask, getTasks } from "../apicalls/task";
 function TodoList() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState({ title: "", description: "" });
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
 
-  const addTask = useCallback(() => {
+
+  useEffect(() => {
+    const fetchTasks = async() => {
+      try {
+        const response = await getTasks();
+        console.log(response);
+      } catch (error) {
+        console.log(error)
+      }
+    };
+
+    fetchTasks();
+  },[])
+
+  const handleAddTask = async(values) => {    
     if (newTask.title.trim() === "") {
       setError("Task title is required.");
       return;
     }
     setError("");
-    setTasks((prevTasks) => [
-      ...prevTasks,
-      {
-        id: Date.now(),
-        title: newTask.title,
-        description: newTask.description,
-        status: "todo",
-      },
-    ]);
-    setNewTask({ title: "", description: "" });
-  }, [newTask]);
+    const taskData = {
+      title: newTask.title,
+      description: newTask.description,
+      status: "pending"
+    }
+    console.log(taskData);
+    try {
+      const response = await addTask(taskData);
+      console.log('response ', response);
+      setTasks((prevTasks) => [
+        ...prevTasks,
+        taskData
+      ]);
+      setNewTask({ title: "", description: "" });
+
+    } catch (error) {
+      console.log('got error ', error);
+      
+    }
+    
+  };
 
   const updateTaskStatus = useCallback((id, status) => {
     setTasks((prevTasks) =>
@@ -52,7 +76,7 @@ function TodoList() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            addTask();
+            handleAddTask();
           }}
           className="space-y-4"
         >
