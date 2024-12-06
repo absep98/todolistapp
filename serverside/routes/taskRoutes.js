@@ -26,7 +26,7 @@ router.post('/add-task', async(req, res) => {
 
 router.get('/get-tasks', async(req, res) => {
     try {
-        const tasks = await Task.findOne({});
+        const tasks = await Task.find({});
         console.log(tasks);
         res.send({
             success: true,
@@ -38,19 +38,38 @@ router.get('/get-tasks', async(req, res) => {
     }
 });
 
-router.put('/update-task', async(req, res) => {
+router.put('/update-task/:taskId', async (req, res) => {
     try {
-        
+        const { taskId } = req.params;
+        const updateData = req.body;
+        const updatedTask = await Task.findByIdAndUpdate(taskId, updateData, { new: true });
+        res.send({
+            success: true,
+            message: 'Task updated successfully',
+            data: updatedTask
+        });
     } catch (error) {
-        
+        res.send({
+            success: false,
+            message: error.message
+        });
     }
-})
+});
 
-router.delete('/delete-task', async(req, res) => {
+router.delete('/delete-task/:taskId', async(req, res) => {
     try {
-        
+        const { taskId } = req.params;
+        const deletedTask = await Task.findByIdAndDelete(taskId);
+        res.send({
+            success: true,
+            message: 'Task deleted successfully',
+            data: deletedTask
+        });
     } catch (error) {
-        
+        res.send({
+            success: false,
+            message: error.message
+        })
     }
 })
 

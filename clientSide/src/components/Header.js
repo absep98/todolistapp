@@ -27,7 +27,7 @@ const Header = () => {
     <header className="bg-gradient-to-r from-blue-900 to-indigo-600 p-4 shadow-lg sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo */}
-        <h1 className="text-white text-2xl flex items-center">My Website</h1>
+        <h1 className="text-white text-2xl flex items-center">My WorkList</h1>
         <div className="hidden md:flex space-x-4">
           <Link to="/about" className="text-white hover:text-gray-300">About Us</Link>
           {isLoggedIn ? (

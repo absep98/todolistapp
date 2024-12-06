@@ -1,28 +1,29 @@
 import { useState, useCallback, useEffect } from "react";
 import { Plus } from "lucide-react";
 import TodoItem from "./TodoItem";
-import { addTask, getTasks } from "../apicalls/task";
+import { addTask, getTasks, updateTask, deleteTask } from "../apicalls/task";
 function TodoList() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState({ title: "", description: "" });
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
 
+  const [editingTask, setEditingTask] = useState(null);
 
   useEffect(() => {
-    const fetchTasks = async() => {
+    const fetchTasks = async () => {
       try {
         const response = await getTasks();
-        console.log(response);
+        setTasks(response.data);
       } catch (error) {
         console.log(error)
       }
     };
 
     fetchTasks();
-  },[])
+  }, [])
 
-  const handleAddTask = async(values) => {    
+  const handleAddTask = async (values) => {
     if (newTask.title.trim() === "") {
       setError("Task title is required.");
       return;
@@ -45,21 +46,60 @@ function TodoList() {
 
     } catch (error) {
       console.log('got error ', error);
-      
+
     }
-    
+
   };
 
-  const updateTaskStatus = useCallback((id, status) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === id ? { ...task, status } : task
-      )
-    );
+  const handleEditTask = async (taskId, updatedData) => {
+    try {
+      const response = await updateTask(taskId, updatedData);
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task._id === taskId 
+            ? { ...task, ...updatedData } // Spread the updated data
+            : task
+        )
+      );
+      setEditingTask(null);
+    } catch (error) {
+      console.log('Error editing task:', error);
+    }
+  };
+  const updateTaskStatus = useCallback(async (taskId, newStatus) => {
+    if (!taskId) {
+      console.error('No task ID provided');
+      return;
+    }
+    try {
+      // Add console.log to debug the request
+      console.log('Updating task:', taskId, 'with status:', newStatus);
+      
+      const response = await updateTask(taskId, { status: newStatus });
+      
+      // Add console.log to see the response
+      console.log('Update response:', response);
+      
+      // Update the tasks state immediately with the new status
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task._id === taskId 
+            ? { ...task, status: newStatus } // Update the status directly
+            : task
+        )
+      );
+    } catch (error) {
+      console.error('Error updating task status:', error.response || error);
+    }
   }, []);
 
-  const deleteTask = useCallback((id) => {
-    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
+  const handleDeleteTask = useCallback(async (taskId) => {
+    try {
+      await deleteTask(taskId);  // Add this API call
+      setTasks((prevTasks) => prevTasks.filter((task) => task._id !== taskId));  // Changed from id to _id
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
   }, []);
 
   const filteredTasks = tasks.filter((task) =>
@@ -128,10 +168,17 @@ function TodoList() {
         </div>
         {filteredTasks.map((task) => (
           <TodoItem
-            key={task.id}
+            key={task._id}
             task={task}
-            onUpdateStatus={(status) => updateTaskStatus(task.id, status)}
-            onDelete={() => deleteTask(task.id)}
+            onUpdateStatus={(status) => {
+              if (task._id) {
+                updateTaskStatus(task._id, status);
+              }
+            }}
+            onDelete={() => task._id && handleDeleteTask(task._id)}
+            onEdit={() => setEditingTask(task)}
+            isEditing={editingTask?._id === task._id}
+            onSave={handleEditTask}
           />
         ))}
       </div>
