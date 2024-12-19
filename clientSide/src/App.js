@@ -5,6 +5,7 @@ import Login from './components/Login';
 import About from './components/About'
 import Register from './components/Register'
 import Home from './components/Home';
+import JiraLikeKanban from './components/JiraLikeKanban';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/board" element={<JiraLikeKanban />} />
         <Route path="/logout" element={<div>Logout Page</div>} />
         <Route path="/signup" element={<Register />} />
       </Routes>

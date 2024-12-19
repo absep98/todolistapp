@@ -37,6 +37,8 @@ export const deleteTask = async (taskId) => {
         console.log( taskId);
         console.log('====================================');
         const response = await axiosInstance.delete(`/api/task/delete-task/${taskId}`);
+        console.log('backend response ', response);
+        
         return response.data;
     } catch (error) {
         console.log(error);

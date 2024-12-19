@@ -4,25 +4,23 @@ const Task = require('../model/taskModel');
 
 
 
-router.post('/add-task', async(req, res) => {
+router.post('/add-task', async (req, res) => {
     try {
-        const taskExists = await Task.findOne({title : req.body.title});
-        if(taskExists){
-            res.send({
-                success: false,
-                message: 'Task already exists..!!'
-            });
-        }
-        const newTask = await Task(req.body);
-        await newTask.save();
-        res.send({
-            success: true,
-            message: 'Task added successfully..!!'
-        })
+      const newTask = new Task(req.body);
+      const savedTask = await newTask.save(); // This includes the `_id`
+      res.send({
+        success: true,
+        message: "Task added successfully",
+        data: savedTask, // Send the saved task back to the client
+      });
     } catch (error) {
-        console.log(error);
+      res.status(500).send({
+        success: false,
+        message: error.message,
+      });
     }
-});
+  });
+  
 
 router.get('/get-tasks', async(req, res) => {
     try {
@@ -56,21 +54,30 @@ router.put('/update-task/:taskId', async (req, res) => {
     }
 });
 
-router.delete('/delete-task/:taskId', async(req, res) => {
+router.delete('/delete-task/:taskId', async (req, res) => {
     try {
         const { taskId } = req.params;
         const deletedTask = await Task.findByIdAndDelete(taskId);
-        res.send({
+
+        if (!deletedTask) {
+            return res.status(404).send({
+                success: false,
+                message: 'Task not found'
+            });
+        }
+
+        res.status(200).send({
             success: true,
             message: 'Task deleted successfully',
             data: deletedTask
         });
     } catch (error) {
-        res.send({
+        res.status(500).send({
             success: false,
             message: error.message
-        })
+        });
     }
-})
+});
+
 
 module.exports = router;

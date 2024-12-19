@@ -14,6 +14,8 @@ function TodoList() {
     const fetchTasks = async () => {
       try {
         const response = await getTasks();
+        console.log(response);
+        
         setTasks(response.data);
       } catch (error) {
         console.log(error)
@@ -28,22 +30,20 @@ function TodoList() {
       setError("Task title is required.");
       return;
     }
-    setError("");
     const taskData = {
       title: newTask.title,
       description: newTask.description,
       status: "pending"
     }
-    console.log(taskData);
     try {
       const response = await addTask(taskData);
-      console.log('response ', response);
+      console.log('response after adding ', response);
       setTasks((prevTasks) => [
         ...prevTasks,
-        taskData
+        response.data
       ]);
       setNewTask({ title: "", description: "" });
-
+      setError("");
     } catch (error) {
       console.log('got error ', error);
 
@@ -95,17 +95,31 @@ function TodoList() {
 
   const handleDeleteTask = useCallback(async (taskId) => {
     try {
-      await deleteTask(taskId);  // Add this API call
-      setTasks((prevTasks) => prevTasks.filter((task) => task._id !== taskId));  // Changed from id to _id
+      console.log("Attempting to delete task with ID:", taskId);
+  
+      // Wait for the delete API to respond
+      await deleteTask(taskId);
+  
+      // Only update the state after successful deletion
+      setTasks((prevTasks) => {
+        const updatedTasks = prevTasks.filter((task) => task._id !== taskId);
+        console.log("Remaining tasks after deletion:", updatedTasks);
+        return updatedTasks;
+      });
+  
+      console.log("Task deleted successfully");
     } catch (error) {
-      console.error('Error deleting task:', error);
+      console.error("Error deleting task:", error);
     }
   }, []);
+  
+  console.log(tasks)
+
 
   const filteredTasks = tasks.filter((task) =>
     filter === "all" ? true : task.status === filter
   );
-
+  
   return (
     <div className="w-full max-w-md mx-auto bg-white shadow-lg rounded-lg">
       <div className="p-4 border-b">
@@ -166,9 +180,10 @@ function TodoList() {
             <option value="done">Done</option>
           </select>
         </div>
-        {filteredTasks.map((task) => (
-          <TodoItem
-            key={task._id}
+        {filteredTasks.map((task, index) => {          
+          return (
+            <TodoItem
+            key={task._id || index}
             task={task}
             onUpdateStatus={(status) => {
               if (task._id) {
@@ -180,7 +195,10 @@ function TodoList() {
             isEditing={editingTask?._id === task._id}
             onSave={handleEditTask}
           />
-        ))}
+          )
+        }
+          
+        )}
       </div>
     </div>
   );
