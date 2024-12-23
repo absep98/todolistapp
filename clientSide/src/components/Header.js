@@ -20,7 +20,7 @@ const Header = () => {
     // Clear the token from local storage and update the state
     localStorage.removeItem('token');
     setIsLoggedIn(false);
-    navigate('/login');
+    navigate('/logout');
   };
 
   return (
